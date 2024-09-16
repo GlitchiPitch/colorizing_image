@@ -5,6 +5,7 @@ from tensorflow.keras.layers import (
 from PIL import Image
 import numpy as np
 from skimage.color import rgb2lab, lab2rgb
+import matplotlib.pyplot as plt
 
 model = keras.Sequential([
   Input(shape=(None, None, 1)),
@@ -42,3 +43,20 @@ def proceseed_image(img):
 
 img = Image.open("/images/image.png")
 x, y, size = proceseed_image(img)
+
+# COLORIZED
+model.fit(x, y, batch_size=1, epochs=50)
+output = model.predict(x)
+output *= 128
+
+min_vals, max_vals = -128, 127
+ab = np.clip(output[0], min_vals, max_vals)
+
+cur = np.zeros((size[0], size[1], 3))
+cur[:, :, 0] = np.clip(x[0][:, :, 0], 0, 100)
+cur[:, :, 1:] = ab
+
+plt.subplot(1, 2, 1)
+plt.imshow(img)
+plt.subplot(1, 2, 2)
+plt.imshow(lab2rgb(cur))
